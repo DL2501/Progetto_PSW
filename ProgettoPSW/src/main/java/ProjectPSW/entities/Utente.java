@@ -2,22 +2,24 @@ package ProjectPSW.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "Utente")
 public class Utente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     @Column(name = "UID", nullable = false)
     @JsonIgnore
     private Integer utenteId;
@@ -31,12 +33,32 @@ public class Utente {
     @Column(name = "Cognome", length = 50)
     private String cognome;
 
+    @Column(name = "Email", nullable = false, unique = true, length = 90)
+    private String email;
+
     @Column(name = "Data_Nascita", nullable = false)
     private LocalDate dataNascita;
 
-    @OneToMany(mappedBy = "utente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Abbonamento")
+    private Abbonamento abbonamento;
+
+    @OneToMany(mappedBy = "utente", cascade = CascadeType.PERSIST)
+    @Setter(AccessLevel.NONE)
     @JsonIgnore
-    private List<Visione_Watchable> videotecaVirtuale;
+    private List<Prenotazione> prenotazioni;
+
+
+    @Builder
+    public Utente(@NonNull String nomeUtente, String nome, String cognome, @NonNull String email, @NonNull LocalDate dataNascita, Abbonamento abbonamento){
+        this.nomeUtente = nomeUtente;
+        this.nome = nome;
+        this.cognome = cognome;
+        this.email = email;
+        this.dataNascita = dataNascita;
+        this.abbonamento = abbonamento;
+        prenotazioni = new ArrayList<>();
+    }
 
 
     @Transient
@@ -57,12 +79,12 @@ public class Utente {
             return false;
         if (o == this)
             return true;
-        return nomeUtente.equals(u.getNomeUtente());
+        return this.getNomeUtente().equals(u.getNomeUtente());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(nomeUtente);
+        return Objects.hashCode(this.getNomeUtente());
     }
 
 
