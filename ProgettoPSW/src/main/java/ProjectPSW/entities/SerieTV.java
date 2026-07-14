@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,14 +30,9 @@ public class SerieTV extends ContenutoCatalogo {
     @Column(name = "Ideatore", length = 100)
     private String ideatore;
 
-    @NotNull(message = "L'anno di inizio è obbligatorio per una serieTV")
-    @Min(value = 1928, message = "Una serieTV non può essere più vecchia del 1928, in quanto quest'ultimo è l'anno in cui è uscita la prima serirTV.")
-    @Column(name = "Anno_Inizio")
-    private Integer annoInizio;
-
     @Setter(AccessLevel.NONE)
-    @Column(name = "Anno_Fine")
-    private Integer annoFine;
+    @Column(name = "Data_Fine")
+    private LocalDate dataFine;
 
     @NotNull(message = "L'inserimento dello stato di una serieTV è obbligatorio.")
     @Enumerated(EnumType.STRING)
@@ -50,12 +46,9 @@ public class SerieTV extends ContenutoCatalogo {
 
 
     @Builder
-    public SerieTV(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, Integer stagioni, Integer numeroEpisodi, @NonNull String ideatore, @NonNull Integer annoInizio, Integer annoFine, @NonNull StatoSerieTV stato) {
-        super(imdbId, titolo, genere, sinossi, copertinaURL);
-        if (annoInizio < 1928)
-            throw new IllegalArgumentException("Una serieTV non può essere più vecchia del 1928, in quanto quest'ultimo è l'anno in cui è uscita la prima serirTV.");
+    public SerieTV(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, LocalDate dataUscita, Integer stagioni, Integer numeroEpisodi, @NonNull String ideatore, LocalDate dataFine, @NonNull StatoSerieTV stato) {
+        super(imdbId, titolo, genere, sinossi, copertinaURL, dataUscita);
         this.ideatore = ideatore;
-        this.annoInizio = annoInizio;
         this.stato = stato;
         if (!(this.stato.equals(StatoSerieTV.IN_USCITA))) {
             if (stagioni == null || numeroEpisodi == null)
@@ -67,14 +60,14 @@ public class SerieTV extends ContenutoCatalogo {
             this.stagioni = stagioni;
             this.numeroEpisodi = numeroEpisodi;
             if (this.stato.equals(StatoSerieTV.TERMINATO)) {
-                if (annoFine != null && annoFine >= this.annoInizio)
-                    this.annoFine = annoFine;
+                if (dataFine != null && dataFine.isAfter(dataUscita))
+                    this.dataFine = dataFine;
                 else
                     throw new IllegalArgumentException("Se la serie è conclusa allora il valore dell'anno l'anno di fine trasmissione non può essere un valore indefinito o inconsistente rispetto all'anno di inizio.");
             }
         }
         else {
-            if (stagioni != null || numeroEpisodi != null || annoFine != null)
+            if (stagioni != null || numeroEpisodi != null || dataFine != null)
                 throw new IllegalArgumentException("Se una serie non è uscita stagioni,episodi e anno di fine trasmissione non possono avere un valore definito.");
         }
         episodi = new ArrayList<>();
@@ -93,10 +86,10 @@ public class SerieTV extends ContenutoCatalogo {
         numeroEpisodi = nuovoNumeroEpisodi;
     }
 
-    public void inserisciAnnoFine(@NonNull Integer annoConclusione) {
-        if (!(stato.equals(StatoSerieTV.TERMINATO)) || annoConclusione < annoInizio)
+    public void inserisciDataFine(@NonNull LocalDate dataConclusione) {
+        if (!(stato.equals(StatoSerieTV.TERMINATO)) || dataConclusione.isBefore(dataUscita))
             throw new IllegalArgumentException("Il valore dell'anno di fine trasmissione non può essere inconsistenete con il resto degli attributi.");
-        annoFine = annoConclusione;
+        dataFine = dataConclusione;
     }
 
 

@@ -1,5 +1,6 @@
 package ProjectPSW.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -33,9 +34,10 @@ public class Episodio extends Watchable {
     @Column(name = "Regista", length = 100)
     private String regista;
 
-    @NotNull(message = "L'inserimento della data di uscita è obbligatorio per l'episodio")
-    @Column(name = "Data_Uscita")
-    private LocalDate dataUscita;
+    @Setter(AccessLevel.NONE)
+    @Column(name = "Numero_Voti", nullable = false)
+    @JsonIgnore
+    private Integer numeroVoti = 0;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @NotNull(message = "L'inserimento della serieTV di appartenenza è obbligatorio per l'episodio")
@@ -44,15 +46,14 @@ public class Episodio extends Watchable {
 
 
     @Builder
-    public Episodio(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, @NonNull Integer stagione, @NonNull Integer numero, @NonNull Integer durata, @NonNull String regista, @NonNull LocalDate dataUscita, @NonNull SerieTV serieTv) {
-        super(imdbId, titolo, genere, sinossi, copertinaURL);
+    public Episodio(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, LocalDate dataUscita, @NonNull Integer stagione, @NonNull Integer numero, @NonNull Integer durata, @NonNull String regista,  @NonNull SerieTV serieTv) {
+        super(imdbId, titolo, genere, sinossi, copertinaURL, dataUscita);
         if (stagione <= 0 || numero <= 0 || durata <= 0)
             throw new IllegalArgumentException("I valori di stagione,numero episodio e durata devono avere valori maggiori di zero.");
         this.stagione = stagione;
         this.numero = numero;
         this.durata = durata;
         this.regista = regista;
-        this.dataUscita = dataUscita;
         this.serieTv = serieTv;
     }
 

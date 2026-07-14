@@ -1,5 +1,6 @@
 package ProjectPSW.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -24,9 +25,10 @@ public class Film extends ContenutoCatalogo {
     @Column(name = "Regista", length = 100)
     private String regista;
 
-    @NotNull(message = "L'inserimento della data di uscita è obbligatorio per un film")
-    @Column(name = "Data_Uscita")
-    private LocalDate dataUscita;
+    @Setter(AccessLevel.NONE)
+    @Column(name = "Numero_Voti", nullable = false)
+    @JsonIgnore
+    private Integer numeroVoti = 0;
 
     @Setter(AccessLevel.NONE)
     @Column(name = "Capacità_Massima")
@@ -43,11 +45,10 @@ public class Film extends ContenutoCatalogo {
 
 
     @Builder
-    public Film(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, Integer durata, @NonNull String regista, @NonNull LocalDate dataUscita, Integer capacitaMassima, @NonNull Boolean inUscita) {
-        super(imdbId, titolo, genere, sinossi, copertinaURL);
+    public Film(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, LocalDate dataUscita, Integer durata, @NonNull String regista, Integer capacitaMassima, @NonNull Boolean inUscita) {
+        super(imdbId, titolo, genere, sinossi, copertinaURL, dataUscita);
         this.inUscita = inUscita;
         this.regista = regista;
-        this.dataUscita = dataUscita;
         if (!this.inUscita) {
             if (durata == null || durata < 40)
                 throw new IllegalArgumentException("Un film uscito deve avere una durata definita e superiore a 40 minuti.");

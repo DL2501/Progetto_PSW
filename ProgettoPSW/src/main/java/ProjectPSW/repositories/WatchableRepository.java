@@ -7,11 +7,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface WatchableRepository extends JpaRepository<Watchable,Integer> {
+public interface WatchableRepository<T extends Watchable> extends JpaRepository<T,Integer> {
 
-    Optional<Watchable> findByImdbId(String imdbId);
+    Optional<T> findByImdbId(String imdbId);
 
     boolean existByImdbId(String imdbId);
+
+
 
 
 
