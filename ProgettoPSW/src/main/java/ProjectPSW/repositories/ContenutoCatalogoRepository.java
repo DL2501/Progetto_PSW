@@ -1,7 +1,8 @@
 package ProjectPSW.repositories;
 
 import ProjectPSW.entities.ContenutoCatalogo;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -19,7 +20,7 @@ public interface ContenutoCatalogoRepository extends WatchableRepository<Contenu
             "      (:genere IS NULL OR LOWER(c.genere) = LOWER(:genere)) AND " +
             "      (:anno IS NULL OR YEAR(c.dataUscita) = :anno) AND " +
             "      (:valutazione IS NULL OR c.valutazione = :valutazione)")
-    List<ContenutoCatalogo> ricercaDinamicaBase(@Param("titolo") String titolo, @Param("genere") String genere, @Param("anno") Integer anno, @Param("valutazione") Double valutazione);
+    Page<ContenutoCatalogo> ricercaDinamicaBase(@Param("titolo") String titolo, @Param("genere") String genere, @Param("anno") Integer anno, @Param("valutazione") Integer valutazione, Pageable pageable);
 
 
     List<ContenutoCatalogo> findByDataUscitaBetween(LocalDate dataInizio, LocalDate dataFine);

@@ -11,7 +11,7 @@ public interface WatchableRepository<T extends Watchable> extends JpaRepository<
 
     Optional<T> findByImdbId(String imdbId);
 
-    boolean existByImdbId(String imdbId);
+    boolean existsByImdbId(String imdbId);
 
 
 

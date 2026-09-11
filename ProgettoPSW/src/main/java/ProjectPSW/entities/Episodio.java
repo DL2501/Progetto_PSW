@@ -34,28 +34,47 @@ public class Episodio extends Watchable {
     @Column(name = "Regista", length = 100)
     private String regista;
 
+    @NotNull(message = "La presenza di un conteggio del numero di valutazioni che un film ha ricevuto dagli utenti è obbligatorio")
     @Setter(AccessLevel.NONE)
-    @Column(name = "Numero_Voti", nullable = false)
+    @Column(name = "Numero_Voti")
     @JsonIgnore
     private Integer numeroVoti = 0;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @NotNull(message = "L'inserimento della serieTV di appartenenza è obbligatorio per l'episodio")
-    @JoinColumn(name = "SerieTV", nullable = false, updatable = false)
+    @NotNull(message = "L'inserimento della serie TV di appartenenza è obbligatorio per l'episodio")
+    @JoinColumn(name = "SerieTV", updatable = false)
     private SerieTV serieTv;
 
 
     @Builder
     public Episodio(String imdbId, String titolo, String genere, String sinossi, String copertinaURL, LocalDate dataUscita, @NonNull Integer stagione, @NonNull Integer numero, @NonNull Integer durata, @NonNull String regista,  @NonNull SerieTV serieTv) {
         super(imdbId, titolo, genere, sinossi, copertinaURL, dataUscita);
+        LocalDate dataOdierna = LocalDate.now();
         if (stagione <= 0 || numero <= 0 || durata <= 0)
             throw new IllegalArgumentException("I valori di stagione,numero episodio e durata devono avere valori maggiori di zero.");
+        if (dataUscita.isAfter(dataOdierna))
+            throw new IllegalArgumentException("Un episodio appena pubblicato non può avere una data di uscita sucessiva a quella odierna");
         this.stagione = stagione;
         this.numero = numero;
         this.durata = durata;
         this.regista = regista;
         this.serieTv = serieTv;
     }
+
+
+    public void modificaDataUscita(@NonNull LocalDate nuovaData) {
+        if (nuovaData.isAfter(LocalDate.now()))
+            throw new IllegalArgumentException("Un episodio appena pubblicato non può avere una data di uscita sucessiva a quella odierna");
+        dataUscita = nuovaData;
+    }
+
+
+
+
+
+
+
+
 
 
 }
