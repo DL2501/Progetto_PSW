@@ -21,6 +21,10 @@ public interface VisioneWatchableRepository extends JpaRepository<Visione_Watcha
 
     List<Visione_Watchable> findByUtenteIdAndInVideotecaTrue(Integer utenteId);
 
+    List<Visione_Watchable> findByUtenteIdAndInVideotecaFalse(Integer utenteId);
+
+    Optional<Visione_Watchable> findByUtenteIdAndWatchableId(Integer utenteId, Integer watchableId);
+
     Optional<Visione_Watchable> findByUtenteIdAndWatchableIdAndInVideotecaTrue(Integer utenteId, Integer watchableId);
 
     boolean existsByUtenteIdAndWatchableId(Integer utenteId, Integer watchableId);
@@ -33,8 +37,22 @@ public interface VisioneWatchableRepository extends JpaRepository<Visione_Watcha
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT v " +
             "FROM Visione_Watchable v " +
+            "WHERE v.id = :visioneWatchableId")
+    Optional<Visione_Watchable> findByIdForUpdate(@Param("visioneWatchableId") Integer visioneWatchableId);
+
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v " +
+            "FROM Visione_Watchable v " +
             "WHERE v.utente.id = :utenteId AND v.watchable.id = :watchableId")
     Optional<Visione_Watchable> findByUtenteIdAndWatchableIdForUpdate(@Param("utenteId") Integer utenteId, @Param("watchableId") Integer watchableId);
+
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v " +
+            "FROM Visione_Watchable v " +
+            "WHERE v.utente.id = :utenteId AND v.watchable.id = :watchableId AND v.inVideoteca = true")
+    Optional<Visione_Watchable> findByUtenteIdAndWatchableIdAndInVideotecaTrueForUpdate(@Param("utenteId") Integer utenteId, @Param("watchableId") Integer watchableId);
 
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -108,7 +126,7 @@ public interface VisioneWatchableRepository extends JpaRepository<Visione_Watcha
     Page<Visione_Watchable> ricercaDinamicaSerieTVVP(@Param("utenteId") Integer utenteId, @Param("titolo") String titolo, @Param("genere") String genere, @Param("anno") Integer anno, @Param("episodi") Integer episodi, @Param("ideatore") String ideatore, @Param("annoConclusione") Integer annoConclusione, @Param("stato") StatoSerieTV stato, @Param("statoVisione") StatoVisione statoVisione, @Param("valutazione") Integer valutazione, Pageable pageable);
 
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query("UPDATE Visione_Watchable v SET v.valutazione = " +
            "(SELECT AVG(v2.valutazione) " +
             "FROM Visione_Watchable v2 " +
@@ -118,17 +136,6 @@ public interface VisioneWatchableRepository extends JpaRepository<Visione_Watcha
             "WHERE v.utente.id = :utenteId AND v.watchable.id = :serieTvId")
     void aggiornaValutazioneByMediaSerieTV(@Param("utenteId") Integer utenteId, @Param("serieTvId") Integer serieTvId);
 
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Visione_Watchable v SET v.valutazione = :valutazione " +
-           "WHERE v.utente.id = :utenteId AND v.watchable.id = :watchableId AND v.inVideoteca = true")
-    void impostaValutazione(@Param("utenteId") Integer utenteId, @Param("watchableId") Integer watchableId, @Param("valutazione") Integer valutazione);
-
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Visione_Watchable v SET v.statoVisione = :statoVisione " +
-            "WHERE v.utente.id = :utenteId AND v.watchable.id = :watchableId AND v.inVideoteca = true")
-    void impostaStatoVisione(@Param("utenteId") Integer utenteId, @Param("watchableId") Integer watchableId, @Param("statoVisione") StatoVisione statoVisione);
 
 
     @Query("SELECT v " +
@@ -153,31 +160,7 @@ public interface VisioneWatchableRepository extends JpaRepository<Visione_Watcha
             "WHERE (v.utente.id = :utenteId AND e.serieTv.id = :serieTvId) AND " +
             "      (e.stagione = :stagione AND e.numero = :numeroEpisodio) AND " +
             "      (v.inVideoteca = true)")
-    List<Visione_Watchable> findEpisodioBySerieTVAndStagioneAndNumero(@Param("utenteId") Integer utenteId, @Param("serieTvId") Integer serieTvId, @Param("stagione") Integer stagione, @Param("numeroEpisodio") Integer numeroEpisodio);
-
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Visione_Watchable v SET v.inVideoteca = false " +
-            "WHERE v.utente.id = :utenteId AND v.watchable.id = :watchableId AND v.inVideoteca = true")
-    void eliminaWatchableDallaVideoteca(@Param("utenteId") Integer utenteId, @Param("watchableId") Integer watchableId);
-
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Visione_Watchable v SET v.inVideoteca = false " +
-            "WHERE v.utente.id = :utenteId AND v.inVideoteca = true")
-    void eliminaTuttiIWatchableDallaVideoteca(@Param("utenteId") Integer utenteId);
-
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Visione_Watchable v SET v.inVideoteca = false " +
-            "WHERE v.utente.id = :utenteId AND TREAT(v.watchable AS Episodio).serieTv.id = :serieTvId AND v.inVideoteca = true")
-    void eliminaEpisodiSerieTVDallaVideoteca(@Param("utenteId") Integer utenteId, @Param("serieTvId") Integer serieTvId);
-
-
-    @Modifying(clearAutomatically = true)
-    @Query("DELETE FROM Visione_Watchable v " +
-            "WHERE v.utente.id = :utenteId AND v.valutazione IS NULL AND v.inVideoteca = false")
-    void eliminaRecordScarto(@Param("utenteId") Integer utenteId);
+    Optional<Visione_Watchable> findEpisodioBySerieTVAndStagioneAndNumero(@Param("utenteId") Integer utenteId, @Param("serieTvId") Integer serieTvId, @Param("stagione") Integer stagione, @Param("numeroEpisodio") Integer numeroEpisodio);
 
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -188,19 +171,19 @@ public interface VisioneWatchableRepository extends JpaRepository<Visione_Watcha
     List<Visione_Watchable> raccogliValutazioniUtente(@Param("utenteId") Integer utenteId);
 
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query("DELETE FROM Visione_Watchable v " +
            "WHERE v.utente.id = :utenteId")
     void eliminaVideotecaUtente(@Param("utenteId") Integer utenteId);
 
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query("DELETE FROM Visione_Watchable v " +
             "WHERE v.watchable.id = :watchableId")
     void eliminaWatchableDalleVideoteche(@Param("watchableId") Integer watchableId);
 
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query("DELETE FROM Visione_Watchable v " +
            "WHERE TREAT(v.watchable AS Episodio).serieTv.id = :serieTvId")
     void eliminaEpisodiSerieTVDalleVideoteche(@Param("serieTvId") Integer serieTvId);

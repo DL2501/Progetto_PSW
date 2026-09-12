@@ -23,7 +23,6 @@ public class Visione_Watchable {
     private Integer visioneWatchableId;
 
     @Enumerated(EnumType.STRING)
-    @Setter(AccessLevel.NONE)
     @Column(name = "Stato_Visione")
     private StatoVisione statoVisione;
 
@@ -71,13 +70,8 @@ public class Visione_Watchable {
 
 
 
-    public void impostaStatoVisione(@NonNull StatoVisione nuovoStatoVisione) {
-        statoVisione = nuovoStatoVisione;
-    }
-
-
-    public void impostaValutazione(@NonNull Integer nuovaValutazione) {
-        if (nuovaValutazione < 1 || nuovaValutazione > 5)
+    public void impostaValutazione(Integer nuovaValutazione) {
+        if (nuovaValutazione != null && (nuovaValutazione < 1 || nuovaValutazione > 5))
             throw new IllegalArgumentException("Il punteggio della valutazione deve essere compreso tra i valori 1 e 5.");
         valutazione = nuovaValutazione;
     }

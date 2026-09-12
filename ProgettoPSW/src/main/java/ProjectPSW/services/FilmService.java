@@ -112,9 +112,12 @@ public class FilmService {
             throw new UserNotFoundException("Errore: utente non trovato.");
         if (!(filmRepository.existsById(filmId)))
             throw new MovieNotFoundException("Errore: Il film non è presente all'interno del catalogo.");
-        Visione_Watchable vwDaRimuovere = visioneRepository.findByUtenteIdAndWatchableIdAndValutazioneNotNullForUpdate(utenteId,filmId).orElseThrow(() -> new RatingNotFoundException("La valutazione da rimuovere è inesistente."));
+        Visione_Watchable vwDaRimuovere = visioneRepository.findByUtenteIdAndWatchableIdForUpdate(utenteId,filmId).orElseThrow(() -> new RatingNotFoundException("La valutazione da rimuovere è inesistente."));
         Integer valutazioneDaRimuovere = vwDaRimuovere.getValutazione();
-        visioneRepository.delete(vwDaRimuovere);
+        if (vwDaRimuovere.isInVideoteca())
+            vwDaRimuovere.impostaValutazione(null);
+        else
+            visioneRepository.delete(vwDaRimuovere);
         int valutazioniModificate = filmRepository.rimuoviVoto(filmId,valutazioneDaRimuovere);
         if (valutazioniModificate == 0)
             throw new NotRatableMovieException("Impossibile rimuovere la valutazione: il film selezionato potrebbe non essere nel catalogo, non essere stato rilasciato o non avere affatto valutazioni.");
