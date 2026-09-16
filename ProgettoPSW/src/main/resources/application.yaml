@@ -1,3 +1,35 @@
 spring:
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8443/auth/realms/Watchablix
+
   application:
-    name: ProgettoPSW
+    name: Watchablix
+
+  datasource:
+    username: 'root'
+    password: 'password'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/watchablix_db?useSSL=false&serverTimezone=Europe/Rome
+
+  jwt:
+    auth:
+      converter:
+        resource-id: watchablix-client
+        principle-attribute: preferred_username
+
+  server:
+    compression:
+      enabled: 'true'
+    port: '8081'
+
+
+
+
+
+
+
+

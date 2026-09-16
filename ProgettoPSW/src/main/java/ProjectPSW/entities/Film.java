@@ -1,6 +1,6 @@
 package ProjectPSW.entities;
 
-import ProjectPSW.support.Exceptions.InvalidBookingException;
+import ProjectPSW.support.exceptions.InvalidBookingException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
