@@ -1,6 +1,6 @@
 package ProjectPSW.entities;
 
-import ProjectPSW.support.Exceptions.IllegalTVSeriesStateException;
+import ProjectPSW.support.exceptions.IllegalTVSeriesStateException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

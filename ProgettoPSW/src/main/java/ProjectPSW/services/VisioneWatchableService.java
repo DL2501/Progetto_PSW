@@ -2,10 +2,10 @@ package ProjectPSW.services;
 
 import ProjectPSW.entities.*;
 import ProjectPSW.repositories.*;
-import ProjectPSW.support.Exceptions.*;
-import ProjectPSW.support.Utility.ricercaDTO.FiltriRicercaCatalogoVideotecaDTO;
-import ProjectPSW.support.Utility.ricercaDTO.FiltriRicercaFilmVideotecaDTO;
-import ProjectPSW.support.Utility.ricercaDTO.FiltriRicercaSerieTVVideotecaDTO;
+import ProjectPSW.support.exceptions.*;
+import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaCatalogoVideotecaDTO;
+import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaFilmVideotecaDTO;
+import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaSerieTVVideotecaDTO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.NonNull;
