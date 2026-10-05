@@ -52,7 +52,16 @@ public class UtenteService {
     public Utente getUtente(@NonNull Integer utenteId) throws UserNotFoundException {
         Optional<Utente> utenteOpt = utenteRepository.findById(utenteId);
         if (utenteOpt.isEmpty())
-            throw new UserNotFoundException("L'utente non è stato registrato.");
+            throw new UserNotFoundException("Errore: l'utente non è stato registrato.");
+        return utenteOpt.get();
+    }
+
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    public Utente getUtente(@NonNull String nomeUtente) throws UserNotFoundException {
+        Optional<Utente> utenteOpt = utenteRepository.findByNomeUtente(nomeUtente);
+        if (utenteOpt.isEmpty())
+            throw new UserNotFoundException("Errore: l'utente non è stato registrato.");
         return utenteOpt.get();
     }
 
@@ -75,30 +84,6 @@ public class UtenteService {
         visioneRepository.eliminaVideotecaUtente(utenteId);
         utenteRepository.deleteById(utenteId);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

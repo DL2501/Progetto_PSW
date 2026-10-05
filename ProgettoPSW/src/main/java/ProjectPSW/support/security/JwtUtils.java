@@ -46,23 +46,13 @@ public class JwtUtils {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public static boolean isAmministratore() {
+        Authentication autenticazione = SecurityContextHolder.getContext().getAuthentication();
+        if (!(autenticazione instanceof JwtAuthenticationToken tokenAutenticazione))
+            return false;
+        return tokenAutenticazione.getAuthorities().stream().anyMatch(
+                a -> ("ROLE_Amministratore").equals(a.getAuthority()));
+    }
 
 
 

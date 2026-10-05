@@ -30,19 +30,12 @@ public class PrenotazioneService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Prenotazione getPrenotazione(@NonNull Integer prenotazioneId) throws BookingNotFoundException {
-        Optional<Prenotazione> prenotazioneOpt = prenotazioneRepository.findById(prenotazioneId);
+    public Prenotazione getPrenotazione(@NonNull Integer utenteId, @NonNull Integer filmId) throws BookingNotFoundException, UserNotFoundException {
+        if (!(utenteRepository.existsById(utenteId)))
+            throw new UserNotFoundException("Errore: l'account in questione e le prenotazioni ad esso associate sono entrambe inesistenti.");
+        Optional<Prenotazione> prenotazioneOpt = prenotazioneRepository.findByUtenteIdAndFilmId(utenteId,filmId);
         if (prenotazioneOpt.isEmpty())
-            throw new BookingNotFoundException("La prenotazione selezionata non è presente nel registro delle prenotazioni");
-        return prenotazioneOpt.get();
-    }
-
-
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Prenotazione getPrenotazioneByCodice(@NonNull String codiceBiglietto) throws BookingNotFoundException {
-        Optional<Prenotazione> prenotazioneOpt = prenotazioneRepository.findByCodiceBiglietto(codiceBiglietto);
-        if (prenotazioneOpt.isEmpty())
-            throw new BookingNotFoundException("La prenotazione selezionata con codice biglietto: " + codiceBiglietto + ", non è presente nel registro delle prenotazioni");
+            throw new BookingNotFoundException("La prenotazione selezionata non è presente nel tuo registro delle prenotazioni.");
         return prenotazioneOpt.get();
     }
 

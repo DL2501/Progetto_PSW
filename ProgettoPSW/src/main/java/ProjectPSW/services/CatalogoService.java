@@ -3,7 +3,8 @@ package ProjectPSW.services;
 import ProjectPSW.entities.ContenutoCatalogo;
 import ProjectPSW.repositories.ContenutoCatalogoRepository;
 import ProjectPSW.support.exceptions.CatalogContentNotFoundException;
-import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaCatalogoDTO;
+import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaCatalogo;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +22,7 @@ public class CatalogoService {
     private ContenutoCatalogoRepository catalogoRepository;
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public Page<ContenutoCatalogo> ricercaCatalogoGenerale(FiltriRicercaCatalogoDTO filtri) {
+    public Page<ContenutoCatalogo> ricercaCatalogoGenerale(@NonNull FiltriRicercaCatalogo filtri) {
         String titolo = filtri.getTitolo();
         String genere = filtri.getGenere();
         Integer annoUscita = filtri.getAnnoUscita();

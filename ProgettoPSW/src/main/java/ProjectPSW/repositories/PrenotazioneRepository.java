@@ -17,6 +17,8 @@ public interface PrenotazioneRepository extends JpaRepository<Prenotazione,Integ
 
     Optional<Prenotazione> findByCodiceBiglietto(String codiceBiglietto);
 
+    Optional<Prenotazione> findByUtenteIdAndFilmId(Integer utenteId, Integer filmId);
+
     boolean existsByCodiceBiglietto(String codiceBiglietto);
 
     boolean existsByCodiceBigliettoAndValidaTrue(String codiceBiglietto);

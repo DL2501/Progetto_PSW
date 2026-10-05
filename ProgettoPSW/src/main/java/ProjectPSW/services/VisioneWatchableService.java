@@ -3,11 +3,10 @@ package ProjectPSW.services;
 import ProjectPSW.entities.*;
 import ProjectPSW.repositories.*;
 import ProjectPSW.support.exceptions.*;
-import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaCatalogoVideotecaDTO;
-import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaFilmVideotecaDTO;
-import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaSerieTVVideotecaDTO;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaCatalogoVideoteca;
+import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaFilmVideoteca;
+import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaSerieTVVideoteca;
+import ProjectPSW.support.utility.SezioneVideoteca;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,12 +37,9 @@ public class VisioneWatchableService {
     @Autowired
     private EpisodioRepository episodioRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Page<Visione_Watchable> ricercaBaseVideoteca(@NonNull Integer utenteId, FiltriRicercaCatalogoVideotecaDTO filtri) throws UserNotFoundException {
+    public Page<Visione_Watchable> ricercaBaseVideoteca(@NonNull Integer utenteId, @NonNull FiltriRicercaCatalogoVideoteca filtri) throws UserNotFoundException {
         if (!(utenteRepository.existsById(utenteId)))
             throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
         String titolo = filtri.getTitolo();
@@ -59,7 +55,7 @@ public class VisioneWatchableService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Page<Visione_Watchable> ricercaSezioneFilmVideoteca(@NonNull Integer utenteId, FiltriRicercaFilmVideotecaDTO filtri) throws UserNotFoundException {
+    public Page<Visione_Watchable> ricercaSezioneFilmVideoteca(@NonNull Integer utenteId, @NonNull FiltriRicercaFilmVideoteca filtri) throws UserNotFoundException {
         if (!(utenteRepository.existsById(utenteId)))
             throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
         String titolo = filtri.getTitolo();
@@ -77,7 +73,7 @@ public class VisioneWatchableService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Page<Visione_Watchable> ricercaSezioneSerieTVVideoteca(@NonNull Integer utenteId, FiltriRicercaSerieTVVideotecaDTO filtri) throws UserNotFoundException {
+    public Page<Visione_Watchable> ricercaSezioneSerieTVVideoteca(@NonNull Integer utenteId, @NonNull FiltriRicercaSerieTVVideoteca filtri) throws UserNotFoundException {
         if (!(utenteRepository.existsById(utenteId)))
             throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
         String titolo = filtri.getTitolo();
@@ -124,9 +120,8 @@ public class VisioneWatchableService {
     }
 
 
-
     @Transactional(rollbackFor = Exception.class)
-    public void aggiungiSerieTVAllaVideoteca(@NonNull Integer utenteId, @NonNull Integer serieTvId, @NonNull StatoVisione statoVisione, Integer valutazione, Integer episodiVisti, boolean episodioSuccessivoInVisione) throws IllegalRatingException, IllegalLibraryContentStateException, UserNotFoundException, TVSeriesNotFoundException, IllegalTVSeriesStateException {
+    public void aggiungiSerieTVAllaVideoteca(@NonNull Integer utenteId, @NonNull Integer serieTvId, @NonNull StatoVisione statoVisione, Integer valutazione, Integer episodiVisti, boolean episodioSuccessivoInVisione) throws IllegalRatingException, IllegalLibraryContentStateException, UserNotFoundException, TVSeriesNotFoundException, IllegalTVSeriesStateException, WatchableAlreadyInLibraryException {
         if (valutazione != null && (valutazione < 1 || valutazione > 5))
             throw new IllegalRatingException("Errore: il voto deve essere necessariamente compreso tra 1 e 5 stelle.");
         if ((statoVisione != StatoVisione.IN_VISIONE && (episodiVisti != null || episodioSuccessivoInVisione)))
@@ -163,8 +158,9 @@ public class VisioneWatchableService {
                 }
             }
         }
+        else
+            throw new WatchableAlreadyInLibraryException("Errore: la serie TV che si desidera aggiungere è già presente all'interno della videoteca personale.");
     }
-
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
@@ -178,54 +174,26 @@ public class VisioneWatchableService {
     }
 
 
-
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Watchable getWatchableDallaVideoteca(@NonNull Integer utenteId, @NonNull Integer watchableId) throws UserNotFoundException, WatchableNotInLibraryException {
+    public Page<Visione_Watchable> sfogliaVideoteca(@NonNull Integer utenteId, Integer numeroPagina, @NonNull SezioneVideoteca sezione) throws UserNotFoundException {
         if (!(utenteRepository.existsById(utenteId)))
             throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
-        Optional<Visione_Watchable> vwOpt = visioneRepository.findByUtenteIdAndWatchableIdAndInVideotecaTrue(utenteId,watchableId);
-        if (vwOpt.isEmpty())
-            throw new WatchableNotInLibraryException("Il contenuto selezionato non è presente all'interno della videoteca.");
-        Visione_Watchable vw = vwOpt.get();
-        Watchable watchable = vw.getWatchable();
-        if (watchable instanceof Episodio ep) {
-            Integer serieTvId = ep.getSerieTv().getWatchableId();
-            if (!(visioneRepository.existsByUtenteIdAndWatchableId(utenteId,serieTvId)))
-                throw new WatchableNotInLibraryException("Impossobile visualizzare l'episodio di una serie TV che non è presente all'interno della videoteca.");
+        int paginaVerificata = (numeroPagina != null && numeroPagina >= 0) ? numeroPagina : 0;
+        Pageable richiestaPaginazione = PageRequest.of(paginaVerificata,20);
+        switch (sezione) {
+            case PRINCIPALE -> {
+                return visioneRepository.mostraSezionePrincipaleVideoteca(utenteId,richiestaPaginazione);
+            }
+            case FILM -> {
+                return visioneRepository.mostraSezioneFilmVideoteca(utenteId,richiestaPaginazione);
+            }
+            case SERIE_TV -> {
+                return visioneRepository.mostraSezioneSerieTVVideoteca(utenteId,richiestaPaginazione);
+            }
+            default -> {
+                throw new IllegalArgumentException("Errore: tipologia di sezione non riconosciuta.");
+            }
         }
-        entityManager.refresh(watchable);
-        return watchable;
-    }
-
-
-
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Page<Visione_Watchable> sfogliaSezionePrincipaleVideoteca(@NonNull Integer utenteId, Integer numeroPagina) throws UserNotFoundException {
-        if (!(utenteRepository.existsById(utenteId)))
-            throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
-        int paginaVerificata = (numeroPagina != null && numeroPagina >= 0) ? numeroPagina : 0;
-        Pageable richiestaPaginazione = PageRequest.of(paginaVerificata,20);
-        return visioneRepository.mostraSezionePrincipaleVideoteca(utenteId,richiestaPaginazione);
-    }
-
-
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Page<Visione_Watchable> sfogliaSezioneFilmVideoteca(@NonNull Integer utenteId, Integer numeroPagina) throws UserNotFoundException {
-        if (!(utenteRepository.existsById(utenteId)))
-            throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
-        int paginaVerificata = (numeroPagina != null && numeroPagina >= 0) ? numeroPagina : 0;
-        Pageable richiestaPaginazione = PageRequest.of(paginaVerificata,20);
-        return visioneRepository.mostraSezioneFilmVideoteca(utenteId,richiestaPaginazione);
-    }
-
-
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Page<Visione_Watchable> sfogliaSezioneSerieTVVideoteca(@NonNull Integer utenteId, Integer numeroPagina) throws UserNotFoundException {
-        if (!(utenteRepository.existsById(utenteId)))
-            throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
-        int paginaVerificata = (numeroPagina != null && numeroPagina >= 0) ? numeroPagina : 0;
-        Pageable richiestaPaginazione = PageRequest.of(paginaVerificata,20);
-        return visioneRepository.mostraSezioneSerieTVVideoteca(utenteId,richiestaPaginazione);
     }
 
 
@@ -253,11 +221,10 @@ public class VisioneWatchableService {
     }
 
 
-
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public List<Visione_Watchable> getEpisodiStagioneSerieTVInVideoteca(@NonNull Integer utenteId, @NonNull Integer serieTvId, @NonNull Integer numeroStagione) throws TVSeriesNotFoundException, SeasonNotFoundException, UserNotFoundException, WatchableNotInLibraryException {
+    public List<Visione_Watchable> getEpisodiStagioneSerieTVInVideoteca(@NonNull Integer utenteId, @NonNull Integer serieTvId, @NonNull Integer numeroStagione) throws TVSeriesNotFoundException, SeasonNotFoundException, UserNotFoundException, WatchableNotInLibraryException, IllegalTVSeriesStateException {
         if (numeroStagione <= 0)
-            throw new IllegalArgumentException("Errore: il valore della stagione deve necessariamente essere maggiore di zero.");
+            throw new IllegalTVSeriesStateException("Errore: il valore della stagione deve necessariamente essere maggiore di zero.");
         Utente utente = utenteRepository.findById(utenteId).orElseThrow(() -> new UserNotFoundException("Impossibile aggiungere il contenuto alla videoteca: l'utente risulta inesistente."));
         if (!(visioneRepository.existsByUtenteIdAndWatchableId(utenteId,serieTvId)))
             throw new WatchableNotInLibraryException("La serie TV non è presente all'interno della videoteca");
@@ -280,11 +247,10 @@ public class VisioneWatchableService {
     }
 
 
-
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Visione_Watchable getEpisodioByStagioneAndNumeroInVideoteca(@NonNull Integer utenteId, @NonNull Integer serieTvId, @NonNull Integer numeroStagione, @NonNull Integer numeroEpisodio) throws TVSeriesNotFoundException, EpisodeNotFoundException, WatchableNotInLibraryException, UserNotFoundException {
+    public Visione_Watchable getEpisodioByStagioneAndNumeroInVideoteca(@NonNull Integer utenteId, @NonNull Integer serieTvId, @NonNull Integer numeroStagione, @NonNull Integer numeroEpisodio) throws TVSeriesNotFoundException, EpisodeNotFoundException, WatchableNotInLibraryException, UserNotFoundException, IllegalTVSeriesStateException {
         if (numeroStagione <= 0 || numeroEpisodio <= 0)
-            throw new IllegalArgumentException("Errore: il valore della stagione e del numero dell'episodio devono necessariamente essere maggiori di zero.");
+            throw new IllegalTVSeriesStateException("Errore: il valore della stagione e del numero dell'episodio devono necessariamente essere maggiori di zero.");
         Utente utente = utenteRepository.findById(utenteId).orElseThrow(() -> new UserNotFoundException("Impossibile aggiungere il contenuto alla videoteca: l'utente risulta inesistente."));
         if (!(visioneRepository.existsByUtenteIdAndWatchableId(utenteId,serieTvId)))
             throw new WatchableNotInLibraryException("L'episodio della serie TV selezionata non è presente all'interno della videoteca");
@@ -307,7 +273,7 @@ public class VisioneWatchableService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public List<Visione_Watchable> mostraValutazioniUtente(@NonNull Integer utenteId) throws UserNotFoundException {
+    public List<Visione_Watchable> mostraValutazioniEsterne(@NonNull Integer utenteId) throws UserNotFoundException {
         if (!(utenteRepository.existsById(utenteId)))
             throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
         return visioneRepository.findByUtenteIdAndInVideotecaFalse(utenteId);
@@ -377,7 +343,6 @@ public class VisioneWatchableService {
     }
 
 
-
     @Transactional(rollbackFor = Exception.class)
     public void rimuoviFilmDallaVideoteca(@NonNull Integer utenteId, @NonNull Integer filmId) throws UserNotFoundException, MovieNotFoundException, WatchableNotInLibraryException {
         if (!(utenteRepository.existsById(utenteId)))
@@ -392,7 +357,6 @@ public class VisioneWatchableService {
         else
             visioneRepository.delete(vwDaRimuovere);
     }
-
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -443,8 +407,6 @@ public class VisioneWatchableService {
             throw new UserNotFoundException("Errore: l'account in questione e la videoteca ad esso associata sono entrambi inesistenti.");
         visioneRepository.eliminaVideotecaUtente(utenteId);
     }
-
-
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)

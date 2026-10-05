@@ -6,7 +6,7 @@ import ProjectPSW.repositories.SerieTVRepository;
 import ProjectPSW.repositories.UtenteRepository;
 import ProjectPSW.repositories.VisioneWatchableRepository;
 import ProjectPSW.support.exceptions.*;
-import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaSerieTVDTO;
+import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaSerieTV;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public class SerieTVService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public Page<SerieTV> ricercaSezioneSerieTV(FiltriRicercaSerieTVDTO filtri) {
+    public Page<SerieTV> ricercaSezioneSerieTV(@NonNull FiltriRicercaSerieTV filtri) {
         String titolo = filtri.getTitolo();
         String genere = filtri.getGenere();
         Integer annoUscita = filtri.getAnnoUscita();
@@ -66,9 +66,9 @@ public class SerieTVService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public void aggiungiSerieTVInUscita(@NonNull SerieTV s) throws TVSeriesAlreadyExistException {
+    public void aggiungiSerieTVInUscita(@NonNull SerieTV s) throws TVSeriesAlreadyExistException, IllegalTVSeriesStateException {
         if (s.getStato() != StatoSerieTV.IN_USCITA)
-            throw new IllegalArgumentException("Impossibile inserire una serie TV già uscita senza inserire anche i suoi episodi.");
+            throw new IllegalTVSeriesStateException("Impossibile inserire una serie TV già uscita senza inserire anche i suoi episodi.");
         String imdbId = s.getImdbId();
         if (serieTVRepository.existsByImdbId(imdbId))
             throw new TVSeriesAlreadyExistException("La serie TV che stai provando ad inserire è già presente nel catalogo.");
@@ -77,9 +77,9 @@ public class SerieTVService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public void aggiungiSerieTV(@NonNull SerieTV s, @NonNull List<Episodio> episodi) throws TVSeriesAlreadyExistException, EpisodeAlreadyExistException, InvalidEpisodeException {
+    public void aggiungiSerieTV(@NonNull SerieTV s, @NonNull List<Episodio> episodi) throws TVSeriesAlreadyExistException, EpisodeAlreadyExistException, InvalidEpisodeException, IllegalTVSeriesStateException {
         if (s.getStato() == StatoSerieTV.IN_USCITA)
-            throw new IllegalArgumentException("Impossibile inserire gli episodi di una serie TV che non è ancora uscita.");
+            throw new IllegalTVSeriesStateException("Impossibile inserire gli episodi di una serie TV che non è ancora uscita.");
         String imdbId = s.getImdbId();
         if (serieTVRepository.existsByImdbId(imdbId))
             throw new TVSeriesAlreadyExistException("La serie TV che stai provando ad inserire è già presente nel catalogo.");
@@ -135,9 +135,9 @@ public class SerieTVService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public List<Episodio> getEpisodiStagione(@NonNull Integer serieTvId, @NonNull Integer numeroStagione) throws TVSeriesNotFoundException, SeasonNotFoundException {
+    public List<Episodio> getEpisodiStagione(@NonNull Integer serieTvId, @NonNull Integer numeroStagione) throws TVSeriesNotFoundException, SeasonNotFoundException, IllegalTVSeriesStateException {
         if (numeroStagione <= 0)
-            throw new IllegalArgumentException("Errore: il valore della stagione deve necessariamente essere maggiore di zero.");
+            throw new IllegalTVSeriesStateException("Errore: il valore della stagione deve necessariamente essere maggiore di zero.");
         if (!(serieTVRepository.existsById(serieTvId)))
             throw new TVSeriesNotFoundException("La serie TV non è presente all'interno del catalogo");
         List<Episodio> episodiStagioneSerieTV = episodioRepository.findBySerieTvIdAndStagioneOrderByNumeroAsc(serieTvId,numeroStagione);
@@ -148,9 +148,9 @@ public class SerieTVService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Episodio getEpisodioByStagioneAndNumero(@NonNull Integer serieTvId, @NonNull Integer numeroStagione, @NonNull Integer numeroEpisodio) throws TVSeriesNotFoundException, EpisodeNotFoundException {
+    public Episodio getEpisodioByStagioneAndNumero(@NonNull Integer serieTvId, @NonNull Integer numeroStagione, @NonNull Integer numeroEpisodio) throws TVSeriesNotFoundException, EpisodeNotFoundException, IllegalTVSeriesStateException {
         if (numeroStagione <= 0 || numeroEpisodio <= 0)
-            throw new IllegalArgumentException("Errore: il valore della stagione e del numero dell'episodio devono necessariamente essere maggiori di zero.");
+            throw new IllegalTVSeriesStateException("Errore: il valore della stagione e del numero dell'episodio devono necessariamente essere maggiori di zero.");
         if (!(serieTVRepository.existsById(serieTvId)))
             throw new TVSeriesNotFoundException("La serie TV non è presente all'interno del catalogo");
         Optional<Episodio> episodioOpt = episodioRepository.findBySerieTvIdAndStagioneAndNumero(serieTvId,numeroStagione,numeroEpisodio);
@@ -204,7 +204,7 @@ public class SerieTVService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public void aggiornaValutazione(@NonNull Integer serieTvId) throws TVSeriesNotFoundException {
+    public void aggiornaValutazioneSerieTV(@NonNull Integer serieTvId) throws TVSeriesNotFoundException {
         if (!(serieTVRepository.existsById(serieTvId)))
             throw new TVSeriesNotFoundException("Errore: Impossibile aggiornare la valutazione di una serie TV che non è presente nel catalogo.");
         int valutazioniModificate = serieTVRepository.aggiornaValutazione(serieTvId);

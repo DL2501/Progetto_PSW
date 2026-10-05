@@ -6,7 +6,7 @@ import ProjectPSW.repositories.PrenotazioneRepository;
 import ProjectPSW.repositories.UtenteRepository;
 import ProjectPSW.repositories.VisioneWatchableRepository;
 import ProjectPSW.support.exceptions.*;
-import ProjectPSW.support.utility.ricercaDTO.FiltriRicercaFilmDTO;
+import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaFilm;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public class FilmService {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public Page<Film> ricercaSezioneFilm(FiltriRicercaFilmDTO filtri) {
+    public Page<Film> ricercaSezioneFilm(@NonNull FiltriRicercaFilm filtri) {
         String titolo = filtri.getTitolo();
         String genere = filtri.getGenere();
         Integer annoUscita = filtri.getAnnoUscita();

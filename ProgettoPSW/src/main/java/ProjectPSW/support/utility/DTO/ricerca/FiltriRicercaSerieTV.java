@@ -1,12 +1,11 @@
-package ProjectPSW.support.utility.ricercaDTO;
+package ProjectPSW.support.utility.DTO.ricerca;
 
 import ProjectPSW.entities.StatoSerieTV;
-import ProjectPSW.entities.StatoVisione;
 import ProjectPSW.support.exceptions.InvalidSearchFiltersException;
 import lombok.Getter;
 
 @Getter
-public class FiltriRicercaSerieTVVideotecaDTO extends FiltriRicercaCatalogoVideotecaDTO {
+public class FiltriRicercaSerieTV extends FiltriRicercaCatalogo {
 
     private Integer numeroEpisodi;
     private String ideatore;
@@ -14,8 +13,8 @@ public class FiltriRicercaSerieTVVideotecaDTO extends FiltriRicercaCatalogoVideo
     private StatoSerieTV stato;
 
 
-    public FiltriRicercaSerieTVVideotecaDTO(String titolo, String genere, Integer annoUscita, Integer valutazione, StatoVisione statoVisione, Integer numeroEpisodi, String ideatore, Integer annoConclusione, StatoSerieTV stato) throws InvalidSearchFiltersException {
-        super(titolo, genere, annoUscita, valutazione, statoVisione);
+    public FiltriRicercaSerieTV(String titolo, String genere, Integer annoUscita, Integer valutazione, Integer numeroEpisodi, String ideatore, Integer annoConclusione, StatoSerieTV stato) throws InvalidSearchFiltersException {
+        super(titolo, genere, annoUscita, valutazione);
         if (numeroEpisodi <= 0)
             throw new InvalidSearchFiltersException("Il numero di episodi di una serie uscita è sempre maggiore di zero.");
         this.numeroEpisodi = numeroEpisodi;
@@ -23,6 +22,8 @@ public class FiltriRicercaSerieTVVideotecaDTO extends FiltriRicercaCatalogoVideo
         this.annoConclusione = annoConclusione;
         this.stato = stato;
     }
+
+
 
 
 
