@@ -6,7 +6,7 @@ import ProjectPSW.repositories.SerieTVRepository;
 import ProjectPSW.repositories.UtenteRepository;
 import ProjectPSW.repositories.VisioneWatchableRepository;
 import ProjectPSW.support.exceptions.*;
-import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaSerieTV;
+import ProjectPSW.support.utility.dto.ricerca.FiltriRicercaSerieTV;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

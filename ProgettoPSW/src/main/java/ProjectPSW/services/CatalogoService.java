@@ -3,7 +3,7 @@ package ProjectPSW.services;
 import ProjectPSW.entities.ContenutoCatalogo;
 import ProjectPSW.repositories.ContenutoCatalogoRepository;
 import ProjectPSW.support.exceptions.CatalogContentNotFoundException;
-import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaCatalogo;
+import ProjectPSW.support.utility.dto.ricerca.FiltriRicercaCatalogo;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

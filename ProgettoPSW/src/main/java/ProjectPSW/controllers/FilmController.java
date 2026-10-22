@@ -5,7 +5,7 @@ import ProjectPSW.services.FilmService;
 import ProjectPSW.services.UtenteService;
 import ProjectPSW.support.exceptions.*;
 import ProjectPSW.support.security.JwtUtils;
-import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaFilm;
+import ProjectPSW.support.utility.dto.ricerca.FiltriRicercaFilm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -105,7 +105,7 @@ public class FilmController {
         try {
             Integer utenteId = getUtenteLoggatoId();
             filmService.prenotaPostiAnteprimaFilm(utenteId,filmId,quantita);
-            return new ResponseEntity<>("Prenotazione effettuata con successo.", HttpStatus.OK);
+            return new ResponseEntity<>("Prenotazione effettuata con successo.", HttpStatus.CREATED);
         }
         catch (UserNotFoundException | MovieNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

@@ -1,4 +1,4 @@
-package ProjectPSW.support.utility.DTO.ricerca;
+package ProjectPSW.support.utility.dto.ricerca;
 
 import ProjectPSW.entities.StatoFilm;
 import ProjectPSW.entities.StatoVisione;

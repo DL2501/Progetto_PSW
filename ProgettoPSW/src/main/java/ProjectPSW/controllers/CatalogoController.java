@@ -3,7 +3,7 @@ package ProjectPSW.controllers;
 import ProjectPSW.entities.ContenutoCatalogo;
 import ProjectPSW.services.CatalogoService;
 import ProjectPSW.support.exceptions.CatalogContentNotFoundException;
-import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaCatalogo;
+import ProjectPSW.support.utility.dto.ricerca.FiltriRicercaCatalogo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;

@@ -6,7 +6,7 @@ import ProjectPSW.repositories.PrenotazioneRepository;
 import ProjectPSW.repositories.UtenteRepository;
 import ProjectPSW.repositories.VisioneWatchableRepository;
 import ProjectPSW.support.exceptions.*;
-import ProjectPSW.support.utility.DTO.ricerca.FiltriRicercaFilm;
+import ProjectPSW.support.utility.dto.ricerca.FiltriRicercaFilm;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

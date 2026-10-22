@@ -1,4 +1,4 @@
-package ProjectPSW.support.utility.DTO.request;
+package ProjectPSW.support.utility.dto.request;
 
 import ProjectPSW.entities.Episodio;
 import ProjectPSW.entities.SerieTV;
