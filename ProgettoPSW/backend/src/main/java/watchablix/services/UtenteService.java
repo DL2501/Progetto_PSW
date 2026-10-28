@@ -1,0 +1,92 @@
+package watchablix.services;
+
+import watchablix.entities.Film;
+import watchablix.entities.Utente;
+import watchablix.entities.Visione_Watchable;
+import watchablix.entities.Watchable;
+import watchablix.repositories.*;
+import watchablix.support.exceptions.UserMailAlreadyExistException;
+import watchablix.support.exceptions.UserNameAlreadyExistException;
+import watchablix.support.exceptions.UserNotFoundException;
+import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class UtenteService {
+
+    @Autowired
+    private UtenteRepository utenteRepository;
+
+    @Autowired
+    private VisioneWatchableRepository visioneRepository;
+
+    @Autowired
+    private PrenotazioneRepository prenotazioneRepository;
+
+    @Autowired
+    private FilmRepository filmRepository;
+
+    @Autowired
+    private EpisodioRepository episodioRepository;
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public void registraUtente(@NonNull Utente u) throws UserMailAlreadyExistException, UserNameAlreadyExistException {
+        String nomeUtente = u.getNomeUtente();
+        String email = u.getEmail();
+        if (utenteRepository.existsByNomeUtente(nomeUtente))
+            throw new UserNameAlreadyExistException("Il nome utente scelto per questo account è già in uso. Per procedere alla registrazione scegli una nuovo nome utente.");
+        if (utenteRepository.existsByEmail(email))
+            throw new UserMailAlreadyExistException("L'email scelta per questo account è già in uso. Per procedere alla registrazione scegli una nuova email.");
+        utenteRepository.save(u);
+    }
+
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    public Utente getUtente(@NonNull Integer utenteId) throws UserNotFoundException {
+        Optional<Utente> utenteOpt = utenteRepository.findById(utenteId);
+        if (utenteOpt.isEmpty())
+            throw new UserNotFoundException("Errore: l'utente non è stato registrato.");
+        return utenteOpt.get();
+    }
+
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    public Utente getUtente(@NonNull String nomeUtente) throws UserNotFoundException {
+        Optional<Utente> utenteOpt = utenteRepository.findByNomeUtente(nomeUtente);
+        if (utenteOpt.isEmpty())
+            throw new UserNotFoundException("Errore: l'utente non è stato registrato.");
+        return utenteOpt.get();
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public void eliminaAccount(@NonNull Integer utenteId) throws UserNotFoundException {
+        if (utenteRepository.findByIdForUpdate(utenteId).isEmpty())
+            throw new UserNotFoundException("Impossibile eliminare un utente non registrato.");
+        List<Visione_Watchable> valutazioniUtente = visioneRepository.raccogliValutazioniUtente(utenteId);
+        for (Visione_Watchable vw : valutazioniUtente) {
+            Watchable w = vw.getWatchable();
+            Integer watchableId = w.getId();
+            Integer valutazione = vw.getValutazione();
+            if (w instanceof Film)
+                filmRepository.rimuoviVoto(watchableId,valutazione);
+            else
+                episodioRepository.rimuoviVoto(watchableId,valutazione);
+        }
+        prenotazioneRepository.eliminaPrenotazioniUtente(utenteId);
+        visioneRepository.eliminaVideotecaUtente(utenteId);
+        utenteRepository.deleteById(utenteId);
+    }
+
+
+
+
+
+}

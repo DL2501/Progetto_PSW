@@ -1,0 +1,45 @@
+spring:
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8443/auth/realms/Watchablix
+
+  application:
+    name: Watchablix
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+datasource:
+  url: jdbc:postgresql://localhost:5432/progetto_psw
+  username: 'DL2501'
+  password: 'DBZava2501'
+  driver-class-name: org.postgresql.Driver
+
+jwt:
+  auth:
+    converter:
+      resource-id: watchablix-client
+      principle-attribute: preferred_username
+
+server:
+  compression:
+    enabled: 'true'
+  port: '8081'
+
+
+
+
+
+
+
+

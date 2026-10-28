@@ -1,0 +1,12 @@
+package watchablix.support.exceptions;
+
+public class MovieNotFoundException extends Exception {
+
+    public MovieNotFoundException() {
+        super();
+    }
+
+    public MovieNotFoundException(String message) {
+        super(message);
+    }
+}
